@@ -52,20 +52,38 @@ bool Game::Initialize()
 
 void Game::RunLoop()
 {
-    // stub
-    return;
-}
-
-void Game::Shutdown()
-{
-    SDL_DestroyWindow(mWindow);
-    SDL_Quit();
-    return;
+    while(mIsRunning) {
+        ProcessInput();
+        UpdateGame();
+        GenerateOutput();
+    }
 }
 
 void Game::ProcessInput()
 {
-    // stub
+    SDL_Event event; // Handler for different event types
+                     // Reads from event queue
+                     // Places events on event queue
+
+    while (SDL_PollEvent( &event ))
+    {
+        switch (event.type)
+        {
+        case SDL_QUIT:
+            mIsRunning = false;
+            break;
+        }
+    }
+
+    // Get the state of the keyboard
+    const Uint8 *state = SDL_GetKeyboardState(NULL);
+
+    // If user presses escape, end the game loop
+    if (state[SDL_SCANCODE_ESCAPE])
+    {
+        mIsRunning = false;
+    }
+
     return;
 }
 
@@ -77,6 +95,42 @@ void Game::UpdateGame()
 
 void Game::GenerateOutput()
 {
-    // stub
+    SDL_SetRenderDrawColor(
+        mRenderer,
+        178,    // Red
+        102,    // Green
+        255,    // Blue
+        255     // Alpha (0=transparent 255=not)
+    );
+
+    // Clear Back buffer
+    SDL_RenderClear(mRenderer);
+
+    // Render the new output
+    SDL_SetRenderDrawColor(mRenderer, 140, 140, 140, 255);
+
+    // Draw a top wall
+    SDL_Rect wall{
+        0,          // top left x
+        0,          // top teft y
+        1024,       // width
+        68          // height
+    };
+    SDL_RenderFillRect(mRenderer, &wall);
+
+    // Draw a bottom wall
+    wall.y = 768 - 68;
+    SDL_RenderFillRect(mRenderer, &wall);
+
+    // Swap main view to be now the back buffer
+    SDL_RenderPresent(mRenderer);
+
     return;
+}
+
+void Game::Shutdown()
+{
+    SDL_DestroyWindow(mWindow);
+    SDL_DestroyRenderer(mRenderer);
+    SDL_Quit();
 }
