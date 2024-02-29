@@ -143,7 +143,7 @@ void Game::GenerateOutput()
         SDL_RenderClear(mRenderer);
 
         // Render the new output
-        SDL_SetRenderDrawColor(mRenderer, 140, 140, 140, 255);
+        SDL_SetRenderDrawColor(mRenderer, 0, 0, 0, 255);
 
         // Draw a top wall
         SDL_Rect wall{
