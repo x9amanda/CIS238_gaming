@@ -98,13 +98,38 @@ void Pong::ProcessInput()
         mIsRunning = false;
     }
 
-    return;
+    // Update the paddle direction based on Up and Down keys
+    mPaddleDir = 0;
+    if (state[SDL_SCANCODE_UP])
+    {
+        mPaddleDir += 1;
+    }
+
+    if (state[SDL_SCANCODE_DOWN]) {
+            mPaddleDir -= 1;
+        }
 }
 
 void Pong::UpdateGame()
 {
-    // stub
-    return;
+    // Wait until 16ms have elapsed since the last frame render
+    while (!SDL_TICKS_PASSED(SDL_GetTicks(), mTicksCount + 16))
+    {
+        ; // Do nothing
+    }
+
+    // Delta time is the difference in ticks from the last frame
+    // converted to seconds
+    float deltaTime = (SDL_GetTicks() - mTicksCount) / 1000.0f;
+
+    // Force max delta timeto limit at 0.05
+    if (deltaTime > 0.05f)
+    {
+        deltaTime = 0.05f;
+    }
+
+    // Update tick count for the next loop (next frame)
+    mTicksCount = SDL_GetTicks();
 }
 
 void Pong::GenerateOutput()
