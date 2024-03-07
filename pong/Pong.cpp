@@ -1,5 +1,10 @@
 #include "Pong.h"
 
+bool hitPaddle();
+bool hitTopWall();
+bool hitBottomWall();
+bool hitRightWall();
+
 const float paddleH = 100.0f;
 
 #define MAX_WIDTH 1024 // Max x resolution value
@@ -102,12 +107,13 @@ void Pong::ProcessInput()
     mPaddleDir = 0;
     if (state[SDL_SCANCODE_UP])
     {
-        mPaddleDir += 1;
+        mPaddleDir -= 1;
     }
 
-    if (state[SDL_SCANCODE_DOWN]) {
-            mPaddleDir -= 1;
-        }
+    if (state[SDL_SCANCODE_DOWN])
+    {
+        mPaddleDir += 1;
+    }
 }
 
 void Pong::UpdateGame()
@@ -130,6 +136,57 @@ void Pong::UpdateGame()
 
     // Update tick count for the next loop (next frame)
     mTicksCount = SDL_GetTicks();
+
+    // How much to move the paddle
+    if (mPaddleDir != 0)
+    {
+        mPaddlePos.y += mPaddleDir * 300.0f * deltaTime;
+
+        // SDL_Log(
+        //"mPaddlePos.x == %f, mPaddlePos.y == %f",
+        // mPaddlePos.x, mPaddlePos.y);
+        // SDL_Log("mBallPos.x == %f, mBallPos.y == %f", mBallPos.x, mBallPos.y);
+        SDL_Log("mBallVel.x == %f, mBallPos.y == %f", mBallVel.x, mBallPos.y);
+
+        // Make sure the paddle does NOT go off the screen
+        if (mPaddlePos.y < (paddleH / 2.0f + THICKNESS))
+        {
+            mPaddlePos.y = paddleH / 2.0f + THICKNESS;
+        }
+        else if (mPaddlePos.y >= 697.412354f)
+        {
+            mPaddlePos.y = MAX_HEIGHT - paddleH / 2.0f - THICKNESS;
+        }
+    }
+
+    // Update the ball position based on velocity
+    mBallPos.x += mBallVel.x * deltaTime;
+    mBallPos.y += mBallPos.y * deltaTime;
+
+    // Bounce if appropriate
+    
+    if (hitPaddle())    // Did we intersect with the paddle?
+    {
+        mBallVel.y = mBallVel * -1.0f;
+    } 
+    else if (hitTopWall())// Did we intersect with the top wall?
+    {
+        mBallVel.y = mBallVel * -1.0f;
+    }
+       else if (hitBottomWall())// Did we intersect with the bottom wall?
+    {
+        mBallVel.y = mBallVel * -1.0f;
+    }    
+    else if (hitRightWall())// Did we intersect with the opposite wall?
+    {
+        mBallVel.y = mBallVel * -1.0f;
+    }
+    // Did the ball go past the paddle and off screen?
+    else if (mBallPos.x < 0)
+    {
+        mIsrunning = false;
+    }
+    // If yes, mIsRunning = false ... gave over)
 }
 
 void Pong::GenerateOutput()
@@ -213,4 +270,18 @@ void Pong::Shutdown()
     SDL_DestroyWindow(mWindow);
     SDL_DestroyRenderer(mRenderer);
     SDL_Quit();
+}
+
+// STUB
+bool hitPaddle(); {
+    return false;
+}
+bool hitTopWall(); {
+    return false;
+}
+bool hitBottomWall(); {
+    return false;
+}
+bool hitRightWall(); {
+    return false;
 }
