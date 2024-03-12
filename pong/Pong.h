@@ -2,8 +2,8 @@
 
 struct Vector2
 {
-    float x;
-    float y;
+  float x;
+  float y;
 };
 
 class Pong
@@ -26,6 +26,11 @@ private:
   void UpdateGame();
   void GenerateOutput();
 
+  bool hitPaddle();
+  bool hitTopWall();
+  bool hitBottomWall();
+  bool hitRightWall();
+
   // // SDL_Point: A data stucture that defines a two dimensional point.
   // // Data Fields: int x, int y
   // SDL_Point mWindowPosition; // Position of window
@@ -33,8 +38,8 @@ private:
   // SDL_Point mMousePosition;  // Mouse position coordinates
 
   // Member data
-  SDL_Window* mWindow;     // Window created by SDL2 Lib
-  SDL_Renderer* mRenderer; // Renderer for 2D drawing
+  SDL_Window *mWindow;     // Window created by SDL2 Lib
+  SDL_Renderer *mRenderer; // Renderer for 2D drawing
   Uint32 mTicksCount;      // Number of ticks since the start of the game
   bool mIsRunning;         // Flag for if game should continue to run
 

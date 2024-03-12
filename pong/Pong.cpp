@@ -1,10 +1,5 @@
 #include "Pong.h"
 
-bool hitPaddle();
-bool hitTopWall();
-bool hitBottomWall();
-bool hitRightWall();
-
 const float paddleH = 100.0f;
 
 #define MAX_WIDTH 1024 // Max x resolution value
@@ -63,8 +58,8 @@ bool Pong::Initialize()
     mBallPos.y = 768 / 4.0f;
 
     // set simulated velocity of the ball
-    mBallVel.x = -200.0f;
-    mBallVel.y = 200.0f;
+    mBallVel.x = 1000.0f;
+    mBallVel.y = 0.0f;
     return true;
 }
 
@@ -164,27 +159,27 @@ void Pong::UpdateGame()
     mBallPos.y += mBallPos.y * deltaTime;
 
     // Bounce if appropriate
-    
-    if (hitPaddle())    // Did we intersect with the paddle?
+
+    if (hitPaddle()) // Did we intersect with the paddle?
     {
-        mBallVel.y = mBallVel * -1.0f;
-    } 
-    else if (hitTopWall())// Did we intersect with the top wall?
-    {
-        mBallVel.y = mBallVel * -1.0f;
+        mBallVel.x = mBallVel.x * -1.0f;
     }
-       else if (hitBottomWall())// Did we intersect with the bottom wall?
+    else if (hitTopWall()) // Did we intersect with the top wall?
     {
-        mBallVel.y = mBallVel * -1.0f;
-    }    
-    else if (hitRightWall())// Did we intersect with the opposite wall?
+        mBallVel.y = mBallVel.x * -1.0f;
+    }
+    else if (hitBottomWall()) // Did we intersect with the bottom wall?
     {
-        mBallVel.y = mBallVel * -1.0f;
+        mBallVel.y = mBallVel.y * -1.0f;
+    }
+    else if (hitRightWall()) // Did we intersect with the opposite wall?
+    {
+        mBallVel.x = mBallVel.x * -1.0f;
     }
     // Did the ball go past the paddle and off screen?
     else if (mBallPos.x < 0)
     {
-        mIsrunning = false;
+        mIsRunning = false;
     }
     // If yes, mIsRunning = false ... gave over)
 }
@@ -273,15 +268,53 @@ void Pong::Shutdown()
 }
 
 // STUB
-bool hitPaddle(); {
+bool Pong::hitPaddle()
+{
+    float diff = mPaddlePos.y - mBallPos.y;
+
+    // Take absolute value of difference
+    if (diff < 0.0f)
+    {
+        diff = diff * -1.0f;
+    }
+
+    if (
+        diff <= paddleH / 2.0f && // Our y difference is small enough
+        mBallPos.x <= THICKNESS + 5 &&
+        mBallPos.x >= THICKNESS && // We are in the correct x position for a bounce
+        mBallVel.x < 0.0f)
+    { // The ball is moving to the left on its way out of bounds
+        return true;
+    }
     return false;
 }
-bool hitTopWall(); {
+
+bool Pong::hitTopWall()
+{
+    if (
+        mBallPos.y >= MAX_HEIGHT - THICKNESS)
+    {
+        return true;
+    }
     return false;
 }
-bool hitBottomWall(); {
+
+bool Pong::hitBottomWall()
+{
+        if (
+        mBallPos.y >= MAX_HEIGHT - THICKNESS)
+    {
+        return true;
+    }
     return false;
 }
-bool hitRightWall(); {
+
+bool Pong::hitRightWall()
+{
+    if (
+        mBallPos.x >= MAX_WIDTH - THICKNESS)
+    {
+        return true;
+    }
     return false;
 }
