@@ -59,7 +59,7 @@ bool Pong::Initialize()
 
     // set simulated velocity of the ball
     mBallVel.x = 1000.0f;
-    mBallVel.y = 0.0f;
+    mBallVel.y = 50.0f;
     return true;
 }
 
@@ -141,22 +141,22 @@ void Pong::UpdateGame()
         //"mPaddlePos.x == %f, mPaddlePos.y == %f",
         // mPaddlePos.x, mPaddlePos.y);
         // SDL_Log("mBallPos.x == %f, mBallPos.y == %f", mBallPos.x, mBallPos.y);
-        SDL_Log("mBallVel.x == %f, mBallPos.y == %f", mBallVel.x, mBallPos.y);
+        // SDL_Log("mBallVel.x == %f, mBallPos.y == %f", mBallVel.x, mBallPos.y);
 
         // Make sure the paddle does NOT go off the screen
         if (mPaddlePos.y < (paddleH / 2.0f + THICKNESS))
         {
-            mPaddlePos.y = paddleH / 2.0f + THICKNESS;
+            mPaddlePos.y = (paddleH / 2.0f + THICKNESS);
         }
-        else if (mPaddlePos.y >= 697.412354f)
+        else if (mPaddlePos.y >= (MAX_HEIGHT - paddleH / 2.0f - THICKNESS))
         {
-            mPaddlePos.y = MAX_HEIGHT - paddleH / 2.0f - THICKNESS;
+            mPaddlePos.y = (MAX_HEIGHT - paddleH / 2.0f - THICKNESS);
         }
     }
 
     // Update the ball position based on velocity
     mBallPos.x += mBallVel.x * deltaTime;
-    mBallPos.y += mBallPos.y * deltaTime;
+    mBallPos.y += mBallVel.y * deltaTime;
 
     // Bounce if appropriate
 
@@ -166,7 +166,7 @@ void Pong::UpdateGame()
     }
     else if (hitTopWall()) // Did we intersect with the top wall?
     {
-        mBallVel.y = mBallVel.x * -1.0f;
+        mBallVel.y = mBallVel.y * -1.0f;
     }
     else if (hitBottomWall()) // Did we intersect with the bottom wall?
     {
@@ -199,7 +199,7 @@ void Pong::GenerateOutput()
     // Render the new output
     SDL_SetRenderDrawColor(mRenderer, 70, 70, 70, 255);
 
-    // Draw a top wall
+    // Draw top wall
     SDL_Rect wall{
         0,         // top left x
         0,         // top teft y
@@ -267,24 +267,23 @@ void Pong::Shutdown()
     SDL_Quit();
 }
 
-// STUB
+// Did the ball hit the paddle or any of the walls?
 bool Pong::hitPaddle()
 {
-    float diff = mPaddlePos.y - mBallPos.y;
+    // Calculate the vertical range of the paddle
+    float paddleTop = mPaddlePos.y - paddleH / 2;
+    float paddleBottom = mPaddlePos.y + paddleH / 2;
 
-    // Take absolute value of difference
-    if (diff < 0.0f)
+    // Check if the ball's y-coordinate is within the paddle's vertical range
+    if (mBallPos.y >= paddleTop && mBallPos.y <= paddleBottom)
     {
-        diff = diff * -1.0f;
-    }
-
-    if (
-        diff <= paddleH / 2.0f && // Our y difference is small enough
-        mBallPos.x <= THICKNESS + 5 &&
-        mBallPos.x >= THICKNESS && // We are in the correct x position for a bounce
-        mBallVel.x < 0.0f)
-    { // The ball is moving to the left on its way out of bounds
-        return true;
+        // Check if the ball's x-coordinate is within the range where it intersects with the paddle
+        if (mBallPos.x >= THICKNESS &&
+            mBallPos.x <= (THICKNESS + 5) * 2 &&
+            mBallVel.x < 0.0f)
+        {
+            return true;
+        }
     }
     return false;
 }
@@ -292,7 +291,7 @@ bool Pong::hitPaddle()
 bool Pong::hitTopWall()
 {
     if (
-        mBallPos.y >= MAX_HEIGHT - THICKNESS)
+        mBallPos.y <= THICKNESS + 10)
     {
         return true;
     }
@@ -312,7 +311,7 @@ bool Pong::hitBottomWall()
 bool Pong::hitRightWall()
 {
     if (
-        mBallPos.x >= MAX_WIDTH - THICKNESS)
+        mBallPos.x >= (MAX_WIDTH - THICKNESS - 10))
     {
         return true;
     }
