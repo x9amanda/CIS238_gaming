@@ -48,4 +48,5 @@ private:
   Vector2 mPaddlePos; // Position of the paddle
   Vector2 mBallPos;   // Position of the ball
   Vector2 mBallVel;   // Velocity of the ball
+  SDL_Color mBallColor; // Color of the ball
 };

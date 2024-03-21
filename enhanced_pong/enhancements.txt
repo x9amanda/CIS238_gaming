@@ -1,0 +1,7 @@
+I have updated my game of pong to change the ball color when the balls hits any of the walls or the paddle.
+If the paddle hits the paddle, it turns back to white.
+If the paddle hits the top wall, it turns light yellow.
+If the paddle hits the right wall, it turns light green.
+If the paddle hits the bottom wall, it turns pink.
+
+I used the variable mBall Color to pass RGBA values within the code to the ball color.

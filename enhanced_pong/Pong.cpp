@@ -11,6 +11,7 @@ const float paddleH = 100.0f;
 Pong::Pong()
     : mWindow(nullptr), mRenderer(nullptr), mTicksCount(0), mIsRunning(true)
 {
+        mBallColor = {255, 255, 255, 255};
 }
 
 bool Pong::Initialize()
@@ -163,18 +164,22 @@ void Pong::UpdateGame()
     if (hitPaddle()) // Did we intersect with the paddle?
     {
         mBallVel.x = mBallVel.x * -1.0f;
+        mBallColor = {255, 255, 255, 255}; // Change ball color to white
     }
     else if (hitTopWall()) // Did we intersect with the top wall?
     {
         mBallVel.y = mBallVel.y * -1.0f;
+        mBallColor = {255, 255, 153, 255}; // Change ball color to light yellow
     }
     else if (hitBottomWall()) // Did we intersect with the bottom wall?
     {
         mBallVel.y = mBallVel.y * -1.0f;
+        mBallColor = {153, 255, 153, 255}; // Change ball color to light green
     }
     else if (hitRightWall()) // Did we intersect with the opposite wall?
     {
         mBallVel.x = mBallVel.x * -1.0f;
+        mBallColor = {255, 153, 255, 255}; // Change ball color to pink
     }
     // Did the ball go past the paddle and off screen?
     else if (mBallPos.x < 0)
@@ -186,13 +191,12 @@ void Pong::UpdateGame()
 
 void Pong::GenerateOutput()
 {
-        SDL_SetRenderDrawColor(mRenderer,
+    SDL_SetRenderDrawColor(mRenderer,
                            120, // Red
                            95,  // Green
                            140, // Blue
                            255  // Alpha (0=transparent 255=not)
-        );
-    
+    );
 
     // Clear Back buffer
     SDL_RenderClear(mRenderer);
@@ -241,8 +245,7 @@ void Pong::GenerateOutput()
     SDL_RenderFillRect(mRenderer, &paddle);
 
     // Render the new output
-    SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255);
-
+    SDL_SetRenderDrawColor(mRenderer, mBallColor.r, mBallColor.g, mBallColor.b, mBallColor.a);
     // Draw ball
     SDL_Rect ball{
         // 50,  // ball starting x
@@ -253,24 +256,6 @@ void Pong::GenerateOutput()
         THICKNESS / 2                                 // ball height
     };
 
-    // Set draw color based on hitting paddle/walls
-    if (hitPaddle() || hitRightWall())
-    {
-        SDL_SetRenderDrawColor(mRenderer,
-                               0,
-                               0,
-                               0,
-                               0);
-    }
-    else if (hitTopWall() || hitBottomWall())
-    {
-        SDL_SetRenderDrawColor(mRenderer,
-                               153,
-                               255,
-                               153,
-                               255);
-    }
-    
     SDL_RenderFillRect(mRenderer, &ball);
 
     // Update the screen with any rendering performed since the previous call
@@ -298,9 +283,9 @@ bool Pong::hitPaddle()
     if (mBallPos.y >= paddleTop && mBallPos.y <= paddleBottom)
     {
         // Check if the ball's x-coordinate is within the range where it intersects with the paddle
-        if (mBallPos.x >= THICKNESS &&
+        if (mBallPos.x >= THICKNESS + 5 &&
             mBallPos.x <= (THICKNESS + 5) * 2 &&
-            mBallVel.x < 0.0f)
+            mBallVel.x <= 0.0f)
         {
             return true;
         }
