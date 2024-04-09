@@ -1,4 +1,6 @@
 #include "Game.h"
+#include "SDL.h"
+#include "SDL_image.h"
 
 // #define MAX_WIDTH 1024  // Max x resolution value
 // #define MAX_HEIGHT 768 // Max y resolution value
