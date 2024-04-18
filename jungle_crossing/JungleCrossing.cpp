@@ -1,11 +1,19 @@
+// Include necessary headers
 #include "JungleCrossing.h"
+#include <SDL_image.h>
 
+// Implement methods of the JungleCrossing class
+
+// Constructor
 JungleCrossing::JungleCrossing()
-    : mWindow(nullptr), mRenderer(nullptr), mTicksCount(0), mIsRunning(true)
+    : mWindow(nullptr), mRenderer(nullptr), mTicksCount(0),
+      mIsRunning(true), mRabbitTexture(nullptr), mPantherTexture(nullptr),
+      mSnakeTexture(nullptr), mMonkeyTexture(nullptr), mCrocTexture(nullptr)
 {
-    return;
+    ;
 }
 
+// Method to initialize the game
 bool JungleCrossing::Initialize()
 {
     // Init SDL
@@ -42,11 +50,29 @@ bool JungleCrossing::Initialize()
         return false;
     }
 
+    // Load textures
+    mRabbitTexture = LoadTexture("rabbit.png");
+    mPantherTexture = LoadTexture("panther.png");
+    mSnakeTexture = LoadTexture("snake.png");
+    mMonkeyTexture = LoadTexture("monkey.png");
+    mCrocTexture = LoadTexture("crocodile.png");
+
+    // Return true if successful, false otherwise
+    if (!mRabbitTexture || !mPantherTexture || !mSnakeTexture || !mMonkeyTexture || !mCrocTexture)
+    {
+        SDL_Log("Failed to load textures.");
+        return false;
+    }
+
+    // Initialize other necessary variables for the actors
+
     return true;
 }
 
+// Method to run the game loop
 void JungleCrossing::RunLoop()
 {
+    // Call base class's RunLoop method
     while (mIsRunning)
     {
         ProcessInput();
@@ -83,6 +109,9 @@ void JungleCrossing::ProcessInput()
 
 void JungleCrossing::UpdateGame()
 {
+    // Update game logic
+    // Move actors, check collisions, etc.
+
     // Wait until 16ms have elapsed since the last frame render
     while (!SDL_TICKS_PASSED(SDL_GetTicks(), mTicksCount + 16))
     {
@@ -94,16 +123,35 @@ void JungleCrossing::GenerateOutput()
 {
     SDL_SetRenderDrawColor(
         mRenderer,
-        25, // Red
+        25,  // Red
         100, // Green
-        30, // Blue
+        30,  // Blue
         255  // Alpha (0=transparent 255=not)
     );
 
     // Clear Back buffer
     SDL_RenderClear(mRenderer);
 
-    // Render the new output
+    // Render actors
+    // Rabbit
+    SDL_Rect rabbitRect = {x, y, width, height}; // Set rabbit position and size
+    SDL_RenderCopy(mRenderer, mRabbitTexture, nullptr, &rabbitRect);
+
+    // Monkey
+    SDL_Rect monkeyRect = {x, y, width, height}; // Set monkey position and size
+    SDL_RenderCopy(mRenderer, mMonkeyTexture, nullptr, &monkeyRect);
+
+    // Panther
+    SDL_Rect pantherRect = {x, y, width, height}; // Set panther position and size
+    SDL_RenderCopy(mRenderer, mPantherTexture, nullptr, &pantherRect);
+
+    // Snake
+    SDL_Rect snakeRect = {x, y, width, height}; // Set snake position and size
+    SDL_RenderCopy(mRenderer, mSnakeTexture, nullptr, &snakeRect);
+
+    // Croc
+    SDL_Rect crocRect = {x, y, width, height}; // Set croc position and size
+    SDL_RenderCopy(mRenderer, mCrocTexture, nullptr, &crocRect);
 
     // Swap main view to be now the back buffer
     SDL_RenderPresent(mRenderer);
@@ -111,8 +159,21 @@ void JungleCrossing::GenerateOutput()
     return;
 }
 
+// Method to shut down the game and clear memory
 void JungleCrossing::Shutdown()
 {
+    // Cleanup textures
+    if (mRabbitTexture)
+        SDL_DestroyTexture(mRabbitTexture);
+    if (mPantherTexture)
+        SDL_DestroyTexture(mPantherTexture);
+    if (mSnakeTexture)
+        SDL_DestroyTexture(mSnakeTexture);
+    if (mMonkeyTexture)
+        SDL_DestroyTexture(mMonkeyTexture);
+    if (mCrocTexture)
+        SDL_DestroyTexture(mCrocTexture);
+
     SDL_DestroyWindow(mWindow);
     SDL_DestroyRenderer(mRenderer);
     SDL_Quit();
