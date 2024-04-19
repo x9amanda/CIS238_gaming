@@ -1,6 +1,6 @@
 #include "SDL.h"
 #include <SDL_image.h>
-#include <string>
+#include <SDL_ttf.h>
 
 class JungleCrossing
 {
@@ -18,10 +18,14 @@ public:
 
 private:
   // Helper functions for the game loop
-  SDL_Texture *LoadTexture(const std::string& fileName);
+  SDL_Texture* LoadTexture(const std::string& fileName);
   void ProcessInput();
   void UpdateGame();
   void GenerateOutput();
+  void RenderText();
+
+  bool CheckCollision();
+  bool CheckCollisions();
 
   // Member data
   SDL_Window *mWindow;     // Window created by SDL2 Lib
@@ -37,4 +41,12 @@ private:
   SDL_Texture *mCrocTexture;
 
   // Define positions and other necessary variables for the actors
+  int mRabbitDir;          // Direction of the rabbit
+  Vector2 mRabbitPos;      // Position of the rabbit
+  Vector2 mPantherPos;     // Position of the panther
+  Vector2 mSnakePos;       // Position of the snake
+  Vector2 mMonkeyPos;      // Position of the monkey
+  Vector2 mCrocPos;   // Position of the crocodile
+
+
 };
