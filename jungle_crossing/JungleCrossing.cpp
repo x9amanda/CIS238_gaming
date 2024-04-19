@@ -10,7 +10,8 @@
 JungleCrossing::JungleCrossing()
     : mWindow(nullptr), mRenderer(nullptr), mTicksCount(0),
       mIsRunning(true), mRabbitTexture(nullptr), mPantherTexture(nullptr),
-      mSnakeTexture(nullptr), mMonkeyTexture(nullptr), mCrocTexture(nullptr)
+      mSnakeTexture(nullptr), mMonkeyTexture(nullptr), mCrocTexture(nullptr),
+      mJungleTexture(nullptr), mMeadowTexture(nullptr)
 {
     ;
 }
@@ -59,32 +60,36 @@ bool JungleCrossing::Initialize()
     mMonkeyTexture = LoadTexture("monkey.png");
     mCrocTexture = LoadTexture("crocodile.png");
 
+        // Load background textures
+    mJungleTexture = LoadTexture("jungle.png");
+    mMeadowTexture = LoadTexture("meadow.png");
+
     // Return true if successful, false otherwise
-    if (!mRabbitTexture || !mPantherTexture || !mSnakeTexture || !mMonkeyTexture || !mCrocTexture)
+    if (!mRabbitTexture || !mPantherTexture || !mSnakeTexture || !mMonkeyTexture || !mCrocTexture || !mJungleTexture || !mMeadowTexture)
     {
         SDL_Log("Failed to load textures.");
         return false;
     }
 
-    // Set initial position of the rabbit
-mRabbitPos.x = 100.0f;
-mRabbitPos.y = SCREEN_HEIGHT / 2.0f; // Centered vertically on the screen
+// Set initial position of the rabbit at the bottom center
+mRabbitPos.x = SCREEN_WIDTH / 2.0f;
+mRabbitPos.y = SCREEN_HEIGHT * 3 / 4; // Bottom center of the screen
 
-// Set initial position of the panther
-mPantherPos.x = SCREEN_WIDTH - 100.0f; // Right side of the screen
-mPantherPos.y = 100.0f;
+// Set initial position of the panther randomly
+mPantherPos.x = rand() % (SCREEN_WIDTH - pantherWidth);
+mPantherPos.y = rand() % (SCREEN_HEIGHT * 3 / 4); // Random position within the jungle
 
-// Set initial position of the snake
-mSnakePos.x = SCREEN_WIDTH / 2.0f; // Centered horizontally on the screen
-mSnakePos.y = SCREEN_HEIGHT - 100.0f; // Bottom of the screen
+// Set initial position of the snake randomly
+mSnakePos.x = rand() % (SCREEN_WIDTH - snakeWidth);
+mSnakePos.y = rand() % (SCREEN_HEIGHT * 3 / 4); // Random position within the jungle
 
-// Set initial position of the monkey
-mMonkeyPos.x = 200.0f;
-mMonkeyPos.y = 200.0f;
+// Set initial position of the monkey randomly
+mMonkeyPos.x = rand() % (SCREEN_WIDTH - monkeyWidth);
+mMonkeyPos.y = rand() % (SCREEN_HEIGHT * 3 / 4); // Random position within the jungle
 
-// Set initial position of the crocodile
-mCrocPos.x = SCREEN_WIDTH - 200.0f;
-mCrocPos.y = SCREEN_HEIGHT - 200.0f;
+// Set initial position of the crocodile randomly
+mCrocPos.x = rand() % (SCREEN_WIDTH - crocodileWidth);
+mCrocPos.y = rand() % (SCREEN_HEIGHT * 3 / 4); // Random position within the jungle
 
 // Set movement velocity for the rabbit
 float rabbitSpeed = 200.0f; // Adjust as needed
@@ -110,6 +115,17 @@ mMonkeyVel.y = monkeySpeed;
 float crocSpeed = 180.0f; // Adjust as needed
 mCrocVel.x = -crocSpeed; // Move towards the left
 mCrocVel.y = 0.0f; // No vertical movement
+
+ // Set the positions and sizes of the background textures
+SDL_Rect mJungleRect = {0, SCREEN_HEIGHT / 4, SCREEN_WIDTH, SCREEN_HEIGHT * 3 / 4}; // Lower 75% of the screen
+SDL_Rect mMeadowRect = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT / 4}; // Upper 25% of the screen
+
+    // Initialize the carrot object
+    if (!mCarrot.Initialize(mRenderer, "carrot.png", initialCarrotPosition))
+    {
+        SDL_Log("Failed to initialize carrot.");
+        return false;
+    }
 
 return true;
 }
@@ -223,22 +239,34 @@ void JungleCrossing::UpdateGame()
         mRabbitPos.y = SCREEN_HEIGHT;
     }
 
-    // Continuously move other actors (panther, snake, monkey, crocodile)
+// Move other actors horizontally in alternating directions
     // Move the panther
     mPantherPos.x += mPantherVel.x * deltaTime;
-    mPantherPos.y += mPantherVel.y * deltaTime;
+    if (mPantherPos.x < 0 || mPantherPos.x + pantherWidth > SCREEN_WIDTH)
+    {
+        mPantherVel.x *= -1; // Reverse direction when reaching screen edges
+    }
 
     // Move the snake
     mSnakePos.x += mSnakeVel.x * deltaTime;
-    mSnakePos.y += mSnakeVel.y * deltaTime;
+    if (mSnakePos.x < 0 || mSnakePos.x + snakeWidth > SCREEN_WIDTH)
+    {
+        mSnakeVel.x *= -1; // Reverse direction when reaching screen edges
+    }
 
     // Move the monkey
     mMonkeyPos.x += mMonkeyVel.x * deltaTime;
-    mMonkeyPos.y += mMonkeyVel.y * deltaTime;
+    if (mMonkeyPos.x < 0 || mMonkeyPos.x + monkeyWidth > SCREEN_WIDTH)
+    {
+        mMonkeyVel.x *= -1; // Reverse direction when reaching screen edges
+    }
 
     // Move the crocodile
     mCrocPos.x += mCrocVel.x * deltaTime;
-    mCrocPos.y += mCrocVel.y * deltaTime;
+    if (mCrocPos.x < 0 || mCrocPos.x + crocodileWidth > SCREEN_WIDTH)
+    {
+        mCrocVel.x *= -1; // Reverse direction when reaching screen edges
+    }
 
   // Check for collisions between the rabbit and other actors
     if (CheckCollisions()) {
@@ -250,6 +278,18 @@ void JungleCrossing::UpdateGame()
     if (RabbitReachesGoal()) {
         // Game over, rabbit reached the goal
         mIsRunning = false;
+    }
+
+        // Update the carrot object
+    mCarrot.Update(deltaTime);
+
+    // Check for collision between rabbit and carrot
+    if (CheckCollision(mRabbitPos, mRabbitSize, mCarrot.GetPosition(), mCarrot.GetSize()))
+    {
+        // Handle collision (e.g., increase score, remove carrot, etc.)
+        // For example:
+        mCarrot.ResetPosition(); // Move the carrot to a new position
+        // Increase score, play sound, etc.
     }
 }
 
@@ -266,6 +306,11 @@ void JungleCrossing::GenerateOutput()
 
     // Clear Back buffer
     SDL_RenderClear(mRenderer);
+
+     // Render the background textures
+    SDL_RenderCopy(mRenderer, mJungleTexture, nullptr, &mJungleRect); // Render jungle background
+    SDL_RenderCopy(mRenderer, mMeadowTexture, nullptr, &mMeadowRect); // Render meadow background
+
 
     // Render actors
 // Rabbit
@@ -287,6 +332,9 @@ SDL_RenderCopy(mRenderer, mSnakeTexture, nullptr, &snakeRect);
 // Crocodile
 SDL_Rect crocodileRect = { static_cast<int>(mCrocodilePos.x), static_cast<int>(mCrocodilePos.y), crocodileWidth, crocodileHeight };
 SDL_RenderCopy(mRenderer, mCrocTexture, nullptr, &crocRect);
+
+    // Render the carrot object
+    mCarrot.Render(mRenderer);
 
         // Render text if the game is over
     if (!mIsRunning)
@@ -320,6 +368,10 @@ void JungleCrossing::Shutdown()
         SDL_DestroyTexture(mMonkeyTexture);
     if (mCrocTexture)
         SDL_DestroyTexture(mCrocTexture);
+        if (mJungleTexture)
+        SDL_DestroyTexture(mJungleTexture);
+    if (mMeadowTexture)
+        SDL_DestroyTexture(mMeadowTexture);
 
     SDL_DestroyWindow(mWindow);
     SDL_DestroyRenderer(mRenderer);

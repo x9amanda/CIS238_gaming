@@ -27,6 +27,10 @@ private:
   bool CheckCollision();
   bool CheckCollisions();
 
+// Instantiate the Carrot class object
+      Carrot mCarrot; 
+
+
   // Member data
   SDL_Window *mWindow;     // Window created by SDL2 Lib
   SDL_Renderer *mRenderer; // Renderer for 2D drawing
@@ -40,6 +44,10 @@ private:
   SDL_Texture *mMonkeyTexture;
   SDL_Texture *mCrocTexture;
 
+      // Background textures
+    SDL_Texture *mJungleTexture;
+    SDL_Texture *mMeadowTexture;
+
   // Define positions and other necessary variables for the actors
   int mRabbitDir;          // Direction of the rabbit
   Vector2 mRabbitPos;      // Position of the rabbit
@@ -48,5 +56,7 @@ private:
   Vector2 mMonkeyPos;      // Position of the monkey
   Vector2 mCrocPos;   // Position of the crocodile
 
-
+    // Define positions and sizes for the background textures
+    SDL_Rect mJungleRect;
+    SDL_Rect mMeadowRect;
 };
