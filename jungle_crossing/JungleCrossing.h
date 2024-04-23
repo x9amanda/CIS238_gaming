@@ -1,6 +1,14 @@
 #include "SDL.h"
-#include <SDL_image.h>
-#include <SDL_ttf.h>
+#include "SDL_image.h"
+#include "SDL_ttf.h"
+#include <string>
+#include "carrot.h"
+
+struct Vector2
+{
+  float x;
+  float y;
+};
 
 class JungleCrossing
 {
@@ -18,7 +26,7 @@ public:
 
 private:
   // Helper functions for the game loop
-  SDL_Texture* LoadTexture(const std::string& fileName);
+  SDL_Texture *LoadTexture(const std::string &fileName);
   void ProcessInput();
   void UpdateGame();
   void GenerateOutput();
@@ -26,10 +34,13 @@ private:
 
   bool CheckCollision();
   bool CheckCollisions();
+  bool RabbitReachesGoal();
 
-// Instantiate the Carrot class object
-      Carrot mCarrot; 
+  void RenderText(const std::string &text, int x, int y);
 
+
+  // Instantiate the Carrot class object
+  Carrot mCarrot;
 
   // Member data
   SDL_Window *mWindow;     // Window created by SDL2 Lib
@@ -44,19 +55,37 @@ private:
   SDL_Texture *mMonkeyTexture;
   SDL_Texture *mCrocTexture;
 
-      // Background textures
-    SDL_Texture *mJungleTexture;
-    SDL_Texture *mMeadowTexture;
+  // Background textures
+  SDL_Texture *mJungleTexture;
+  SDL_Texture *mMeadowTexture;
 
   // Define positions and other necessary variables for the actors
-  int mRabbitDir;          // Direction of the rabbit
-  Vector2 mRabbitPos;      // Position of the rabbit
-  Vector2 mPantherPos;     // Position of the panther
-  Vector2 mSnakePos;       // Position of the snake
-  Vector2 mMonkeyPos;      // Position of the monkey
-  Vector2 mCrocPos;   // Position of the crocodile
 
-    // Define positions and sizes for the background textures
-    SDL_Rect mJungleRect;
-    SDL_Rect mMeadowRect;
+  Vector2 mRabbitPos;  // Position of the rabbit
+  Vector2 mPantherPos; // Position of the panther
+  Vector2 mSnakePos;   // Position of the snake
+  Vector2 mMonkeyPos;  // Position of the monkey
+  Vector2 mCrocPos;    // Position of the crocodile
+
+  Vector2 mRabbitSize;  // Size of the rabbit
+  Vector2 mPantherSize; // Size of the panther
+  Vector2 mSnakeSize;   // Size of the snake
+  Vector2 mMonkeySize;  // Size of the monkey
+  Vector2 mCrocSize;    // Size of the crocodile
+
+  Vector2 mRabbitDir;  // Direction of the rabbit
+  Vector2 mPantherDir; // Direction of the panther
+  Vector2 mSnakeDir;   // Direction of the snake
+  Vector2 mMonkeyDir;  // Direction of the pather
+  Vector2 mCrocDir;    // Direction of the pather
+
+  Vector2 mRabbitVel;  // Velocity of the rabbit
+  Vector2 mPantherVel; // Velocity of the panther
+  Vector2 mSnakeVel;   // Velocity of the snake
+  Vector2 mMonkeyVel;  // Velocity of the pather
+  Vector2 mCrocVel;    // Velocity of the pather
+
+  // Define positions and sizes for the background textures
+  SDL_Rect mJungleRect;
+  SDL_Rect mMeadowRect;
 };
