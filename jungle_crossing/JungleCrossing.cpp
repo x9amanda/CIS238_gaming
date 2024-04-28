@@ -35,8 +35,8 @@ bool JungleCrossing::Initialize()
     }
 
     mWindow = SDL_CreateWindow("Jungle Crossing",
-                               100,              // x coordinate
-                               100,              // y coordinate
+                               SDL_WINDOWPOS_CENTERED,              // x coordinate
+                               SDL_WINDOWPOS_CENTERED,              // y coordinate
                                SCREEN_WIDTH,     // Window width
                                SCREEN_HEIGHT,    // Window height
                                SDL_WINDOW_OPENGL // Flags (0 is for no flags)
@@ -67,8 +67,8 @@ bool JungleCrossing::Initialize()
     mCrocTexture = LoadTexture("crocodile.png");
 
     // Load background textures
-    mJungleTexture = LoadTexture("jungle.png");
-    mMeadowTexture = LoadTexture("meadow.png");
+    mJungleTexture = LoadTexture("jungle.jpg");
+    mMeadowTexture = LoadTexture("meadow.jpg");
 
     // Return true if successful, false otherwise
     if (!mRabbitTexture || !mPantherTexture || !mSnakeTexture || !mMonkeyTexture || !mCrocTexture || !mJungleTexture || !mMeadowTexture)
@@ -331,7 +331,7 @@ void JungleCrossing::GenerateOutput()
     SDL_RenderCopy(mRenderer, mSnakeTexture, nullptr, &snakeRect);
 
     // Crocodile
-    SDL_Rect crocodileRect = {static_cast<int>(mCrocodilePos.x), static_cast<int>(mCrocodilePos.y), crocodileWidth, crocodileHeight};
+    SDL_Rect crocRect = {static_cast<int>(mCrocPos.x), static_cast<int>(mCrocPos.y), crocWidth, crocHeight};
     SDL_RenderCopy(mRenderer, mCrocTexture, nullptr, &crocRect);
 
     // Render the carrot object
