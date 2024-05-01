@@ -4,13 +4,18 @@
 #include "SDL_ttf.h"
 #include "carrot.h"
 
-#define SCREEN_WIDTH 1024 // Max x resolution value
-#define SCREEN_HEIGHT 768 // Max y resolution value
-#define RABBIT_WIDTH 140
-#define PANTHER_WIDTH 140 // Width of Panther image
-#define SNAKE_WIDTH 140   // Width of Panther image
-#define MONKEY_WIDTH 140  // Width of Panther image
-#define CROC_WIDTH 175    // Width of Panther image
+#define SCREEN_WIDTH 1024  // Max x resolution value
+#define SCREEN_HEIGHT 768  // Max y resolution value
+#define RABBIT_WIDTH 140   // Width of the Rabbit image
+#define RABBIT_HEIGHT 120  // Height of the Rabbit image
+#define PANTHER_WIDTH 140  // Width of Panther image
+#define PANTHER_HEIGHT 120 // Height of the Panther image
+#define SNAKE_WIDTH 120    // Width of Snake image
+#define SNAKE_HEIGHT 120   // Height of the Snake image
+#define MONKEY_WIDTH 140   // Width of Panther image
+#define MONEY_HEIGHT 120   // Height of the Monkey image
+#define CROC_WIDTH 175     // Width of Crocodile image
+#define CROC_HEIGHT 120    // Height of the Crocodile image
 
 // Constructor
 JungleCrossing::JungleCrossing()
@@ -35,11 +40,11 @@ bool JungleCrossing::Initialize()
     }
 
     mWindow = SDL_CreateWindow("Jungle Crossing",
-                               SDL_WINDOWPOS_CENTERED,              // x coordinate
-                               SDL_WINDOWPOS_CENTERED,              // y coordinate
-                               SCREEN_WIDTH,     // Window width
-                               SCREEN_HEIGHT,    // Window height
-                               SDL_WINDOW_OPENGL // Flags (0 is for no flags)
+                               SDL_WINDOWPOS_CENTERED, // x coordinate
+                               SDL_WINDOWPOS_CENTERED, // y coordinate
+                               SCREEN_WIDTH,           // Window width
+                               SCREEN_HEIGHT,          // Window height
+                               SDL_WINDOW_OPENGL       // Flags (0 is for no flags)
     );
 
     if (!mWindow)
@@ -127,7 +132,7 @@ bool JungleCrossing::Initialize()
     SDL_Rect mMeadowRect = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT / 4};                     // Upper 25% of the screen
 
     // Initialize the carrot object
-    if (!mCarrot.Initialize(mRenderer, "carrot.png", carrotPosition))
+    if (!mCarrot.Initialize(mRenderer, "carrot.png", mCarrotPos))
     {
         SDL_Log("Failed to initialize carrot.");
         return false;
@@ -315,23 +320,23 @@ void JungleCrossing::GenerateOutput()
 
     // Render actors
     // Rabbit
-    SDL_Rect rabbitRect = {static_cast<int>(mRabbitPos.x), static_cast<int>(mRabbitPos.y), RABBIT_W, rabbitHeight};
+    SDL_Rect rabbitRect = {static_cast<int>(mRabbitPos.x), static_cast<int>(mRabbitPos.y), RABBIT_WIDTH, RABBIT_HEIGHT};
     SDL_RenderCopy(mRenderer, mRabbitTexture, nullptr, &rabbitRect);
 
     // Monkey
-    SDL_Rect monkeyRect = {static_cast<int>(mMonkeyPos.x), static_cast<int>(mMonkeyPos.y), monkeyWidth, monkeyHeight};
+    SDL_Rect monkeyRect = {static_cast<int>(mMonkeyPos.x), static_cast<int>(mMonkeyPos.y), MONKEY_WIDTH, MONEY_HEIGHT};
     SDL_RenderCopy(mRenderer, mMonkeyTexture, nullptr, &monkeyRect);
 
     // Panther
-    SDL_Rect pantherRect = {static_cast<int>(mPantherPos.x), static_cast<int>(mPantherPos.y), pantherWidth, pantherHeight};
+    SDL_Rect pantherRect = {static_cast<int>(mPantherPos.x), static_cast<int>(mPantherPos.y), PANTHER_WIDTH, PANTHER_HEIGHT};
     SDL_RenderCopy(mRenderer, mPantherTexture, nullptr, &pantherRect);
 
     // Snake
-    SDL_Rect snakeRect = {static_cast<int>(mSnakePos.x), static_cast<int>(mSnakePos.y), snakeWidth, snakeHeight};
+    SDL_Rect snakeRect = {static_cast<int>(mSnakePos.x), static_cast<int>(mSnakePos.y), SNAKE_WIDTH, SNAKE_HEIGHT};
     SDL_RenderCopy(mRenderer, mSnakeTexture, nullptr, &snakeRect);
 
     // Crocodile
-    SDL_Rect crocRect = {static_cast<int>(mCrocPos.x), static_cast<int>(mCrocPos.y), crocWidth, crocHeight};
+    SDL_Rect crocRect = {static_cast<int>(mCrocPos.x), static_cast<int>(mCrocPos.y), CROC_WIDTH, CROC_HEIGHT};
     SDL_RenderCopy(mRenderer, mCrocTexture, nullptr, &crocRect);
 
     // Render the carrot object
@@ -434,10 +439,10 @@ bool JungleCrossing::CheckCollision()
 SDL_Texture *JungleCrossing::LoadTexture(const std::string &filePath)
 {
     // Load the image surface from the specified file path
-    SDL_Surface *surface = IMG_Load(filePath.c_str());
+    SDL_Surface *IMG_Load(filePath.c_str());
 
     // Check if the surface was loaded successfully
-    if (!surface)
+    if (!IMG_Load)
     {
         // Log an error message if loading failed and return nullptr
         SDL_Log("Failed to load image %s: %s", filePath.c_str(), IMG_GetError());

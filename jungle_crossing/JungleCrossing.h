@@ -38,7 +38,6 @@ private:
 
   void RenderText(const std::string &text, int x, int y);
 
-
   // Instantiate the Carrot class object
   Carrot mCarrot;
 
@@ -66,6 +65,7 @@ private:
   Vector2 mSnakePos;   // Position of the snake
   Vector2 mMonkeyPos;  // Position of the monkey
   Vector2 mCrocPos;    // Position of the crocodile
+  Vector2 mCarrotPos;  // Position of the carrot(s)
 
   Vector2 mRabbitSize;  // Size of the rabbit
   Vector2 mPantherSize; // Size of the panther
