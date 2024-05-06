@@ -1,515 +1,163 @@
-// Include necessary headers
 #include "JungleCrossing.h"
-#include "SDL_image.h"
-#include "SDL_ttf.h"
-#include "carrot.h"
+#include "TextureLoader.h"
+#include "CollisionHandler.h"
+#include <iostream>
 
-#define SCREEN_WIDTH 1024  // Max x resolution value
-#define SCREEN_HEIGHT 768  // Max y resolution value
-#define RABBIT_WIDTH 140   // Width of the Rabbit image
-#define RABBIT_HEIGHT 120  // Height of the Rabbit image
-#define PANTHER_WIDTH 140  // Width of Panther image
-#define PANTHER_HEIGHT 120 // Height of the Panther image
-#define SNAKE_WIDTH 120    // Width of Snake image
-#define SNAKE_HEIGHT 120   // Height of the Snake image
-#define MONKEY_WIDTH 140   // Width of Panther image
-#define MONEY_HEIGHT 120   // Height of the Monkey image
-#define CROC_WIDTH 175     // Width of Crocodile image
-#define CROC_HEIGHT 120    // Height of the Crocodile image
+JungleCrossing::JungleCrossing() :
+        mWindow(nullptr), mRenderer(nullptr), mFont(nullptr), mScore(0), mTicksCount(0) {}
 
-// Constructor
-JungleCrossing::JungleCrossing()
-    : mWindow(nullptr), mRenderer(nullptr), mTicksCount(0),
-      mIsRunning(true), mRabbitTexture(nullptr), mPantherTexture(nullptr),
-      mSnakeTexture(nullptr), mMonkeyTexture(nullptr), mCrocTexture(nullptr),
-      mJungleTexture(nullptr), mMeadowTexture(nullptr)
-{
-    ;
-}
-
-// Method to initialize the game
-bool JungleCrossing::Initialize()
-{
-    // Init SDL
-    int sdlResult = SDL_Init(SDL_INIT_VIDEO);
-
-    if (sdlResult != 0)
-    {
-        SDL_Log("SDL VIDEO INIT FAILED. %s", SDL_GetError());
+bool JungleCrossing::Initialize() {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
+        std::cerr << "SDL_Init failed: " << SDL_GetError() << std::endl;
         return false;
     }
 
-    mWindow = SDL_CreateWindow("Jungle Crossing",
-                               SDL_WINDOWPOS_CENTERED, // x coordinate
-                               SDL_WINDOWPOS_CENTERED, // y coordinate
-                               SCREEN_WIDTH,           // Window width
-                               SCREEN_HEIGHT,          // Window height
-                               SDL_WINDOW_OPENGL       // Flags (0 is for no flags)
-    );
-
-    if (!mWindow)
-    {
-        SDL_Log("YOU (THE WINDOW) are A FAILURE, %s", SDL_GetError());
+    if (TTF_Init() != 0) {
+        std::cerr << "TTF_Init failed: " << TTF_GetError() << std::endl;
+        SDL_Quit();
         return false;
     }
 
-    mRenderer =
-        SDL_CreateRenderer(mWindow, // Window to create for the renderer
-                           -1,
-                           SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-
-    if (!mRenderer)
-    {
-        SDL_Log("Render = no go, %s", SDL_GetError());
+    mWindow = SDL_CreateWindow("Jungle Crossing", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
+    if (!mWindow) {
+        std::cerr << "SDL_CreateWindow failed: " << SDL_GetError() << std::endl;
+        TTF_Quit();
+        SDL_Quit();
         return false;
     }
 
-    // Load textures
-    mRabbitTexture = LoadTexture("rabbit.png");
-    mPantherTexture = LoadTexture("panther.png");
-    mSnakeTexture = LoadTexture("snake.png");
-    mMonkeyTexture = LoadTexture("monkey.png");
-    mCrocTexture = LoadTexture("crocodile.png");
-
-    // Load background textures
-    mJungleTexture = LoadTexture("jungle.jpg");
-    mMeadowTexture = LoadTexture("meadow.jpg");
-
-    // Return true if successful, false otherwise
-    if (!mRabbitTexture || !mPantherTexture || !mSnakeTexture || !mMonkeyTexture || !mCrocTexture || !mJungleTexture || !mMeadowTexture)
-    {
-        SDL_Log("Failed to load textures.");
+    mRenderer = SDL_CreateRenderer(mWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    if (!mRenderer) {
+        std::cerr << "SDL_CreateRenderer failed: " << SDL_GetError() << std::endl;
+        SDL_DestroyWindow(mWindow);
+        TTF_Quit();
+        SDL_Quit();
         return false;
     }
 
-    // Set initial position of the rabbit at the bottom center
-    mRabbitPos.x = SCREEN_WIDTH / 2.0f;
-    mRabbitPos.y = SCREEN_HEIGHT * 3 / 4; // Bottom center of the screen
-
-    // Set initial position of the panther randomly
-    mPantherPos.x = rand() % (SCREEN_WIDTH - PANTHER_WIDTH);
-    mPantherPos.y = rand() % (SCREEN_HEIGHT * 3 / 4); // Random position within the jungle
-
-    // Set initial position of the snake randomly
-    mSnakePos.x = rand() % (SCREEN_WIDTH - SNAKE_WIDTH);
-    mSnakePos.y = rand() % (SCREEN_HEIGHT * 3 / 4); // Random position within the jungle
-
-    // Set initial position of the monkey randomly
-    mMonkeyPos.x = rand() % (SCREEN_WIDTH - MONKEY_WIDTH);
-    mMonkeyPos.y = rand() % (SCREEN_HEIGHT * 3 / 4); // Random position within the jungle
-
-    // Set initial position of the crocodile randomly
-    mCrocPos.x = rand() % (SCREEN_WIDTH - CROC_WIDTH);
-    mCrocPos.y = rand() % (SCREEN_HEIGHT * 3 / 4); // Random position within the jungle
-
-    // Set movement velocity for the rabbit
-    float rabbitSpeed = 200.0f; // Adjust as needed
-    mRabbitVel.x = rabbitSpeed;
-    mRabbitVel.y = rabbitSpeed;
-
-    // Set movement velocity for the panther
-    float pantherSpeed = 150.0f;   // Adjust as needed
-    mPantherVel.x = -pantherSpeed; // Move towards the left
-    mPantherVel.y = 0.0f;          // No vertical movement
-
-    // Set movement velocity for the snake
-    float snakeSpeed = 100.0f; // Adjust as needed
-    mSnakeVel.x = 0.0f;        // No horizontal movement
-    mSnakeVel.y = -snakeSpeed; // Move upwards
-
-    // Set movement velocity for the monkey
-    float monkeySpeed = 120.0f; // Adjust as needed
-    mMonkeyVel.x = monkeySpeed;
-    mMonkeyVel.y = monkeySpeed;
-
-    // Set movement velocity for the crocodile
-    float crocSpeed = 180.0f; // Adjust as needed
-    mCrocVel.x = -crocSpeed;  // Move towards the left
-    mCrocVel.y = 0.0f;        // No vertical movement
-
-    // Set the positions and sizes of the background textures
-    SDL_Rect mJungleRect = {0, SCREEN_HEIGHT / 4, SCREEN_WIDTH, SCREEN_HEIGHT * 3 / 4}; // Lower 75% of the screen
-    SDL_Rect mMeadowRect = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT / 4};                     // Upper 25% of the screen
-
-    // Initialize the carrot object
-    if (!mCarrot.Initialize(mRenderer, "carrot.png", mCarrotPos))
-    {
-        SDL_Log("Failed to initialize carrot.");
+    mFont = TTF_OpenFont("comic_sans.ttf", 24);
+    if (!mFont) {
+        std::cerr << "TTF_OpenFont failed: " << TTF_GetError() << std::endl;
+        SDL_DestroyRenderer(mRenderer);
+        SDL_DestroyWindow(mWindow);
+        TTF_Quit();
+        SDL_Quit();
         return false;
     }
 
     return true;
 }
 
-// Method to run the game loop
-void JungleCrossing::RunLoop()
-{
-    // Call base class's RunLoop method
-    while (mIsRunning)
-    {
+void JungleCrossing::RunLoop() {
+    while (true) {
         ProcessInput();
         UpdateGame();
         GenerateOutput();
     }
 }
 
-void JungleCrossing::ProcessInput()
-{
-    SDL_Event event; // Handler for different event types
-                     // Reads from event queue
-                     // Places events on event queue
-
-    while (SDL_PollEvent(&event))
-    {
-        switch (event.type)
-        {
-        case SDL_QUIT:
-            mIsRunning = false;
-            break;
-        }
-    }
-
-    // Get the state of the keyboard
-    const Uint8 *state = SDL_GetKeyboardState(NULL);
-
-    // If user presses escape, end the game loop
-    if (state[SDL_SCANCODE_ESCAPE])
-    {
-        mIsRunning = false;
-    }
-
-    // Update the rabbit direction based on arrow keys
-
-    // Check if the Up arrow key is pressed
-    if (state[SDL_SCANCODE_UP])
-    {
-        mRabbitDir.y -= 1; // Move rabbit up
-    }
-
-    // Check if the Down arrow key is pressed
-    if (state[SDL_SCANCODE_DOWN])
-    {
-        mRabbitDir.y += 1; // Move rabbit down
-    }
-
-    // Check if the Left arrow key is pressed
-    if (state[SDL_SCANCODE_LEFT])
-    {
-        mRabbitDir.x -= 1; // Move rabbit to the left
-    }
-
-    // Check if the Right arrow key is pressed
-    if (state[SDL_SCANCODE_RIGHT])
-    {
-        mRabbitDir.x += 1; // Move rabbit to the right
-    }
-}
-
-void JungleCrossing::UpdateGame()
-{
-    // Wait until 16ms have elapsed since the last frame render
-    while (!SDL_TICKS_PASSED(SDL_GetTicks(), mTicksCount + 16))
-    {
-        ; // Do nothing
-    }
-
-    // Calculate delta time (time elapsed since the last frame) in seconds
-    float deltaTime = (SDL_GetTicks() - mTicksCount) / 1000.0f;
-
-    // Limit maximum delta time to avoid large jumps in movement
-    if (deltaTime > 0.05f)
-    {
-        deltaTime = 0.05f;
-    }
-
-    // Update tick count for the next loop (next frame)
-    mTicksCount = SDL_GetTicks();
-
-    // Move the rabbit based on its direction and velocity
-    mRabbitPos.x += mRabbitDir.x * mRabbitVel.x * deltaTime;
-    mRabbitPos.y += mRabbitDir.y * mRabbitVel.y * deltaTime;
-
-    // Ensure the rabbit stays within the screen boundaries
-    if (mRabbitPos.x < 0)
-    {
-        mRabbitPos.x = 0;
-    }
-    else if (mRabbitPos.x > SCREEN_WIDTH)
-    {
-        mRabbitPos.x = SCREEN_WIDTH;
-    }
-
-    if (mRabbitPos.y < 0)
-    {
-        mRabbitPos.y = 0;
-    }
-    else if (mRabbitPos.y > SCREEN_HEIGHT)
-    {
-        mRabbitPos.y = SCREEN_HEIGHT;
-    }
-
-    // Move other actors horizontally in alternating directions
-    // Move the panther
-    mPantherPos.x += mPantherVel.x * deltaTime;
-    if (mPantherPos.x < 0 || mPantherPos.x + PANTHER_WIDTH > SCREEN_WIDTH)
-    {
-        mPantherVel.x *= -1; // Reverse direction when reaching screen edges
-    }
-
-    // Move the snake
-    mSnakePos.x += mSnakeVel.x * deltaTime;
-    if (mSnakePos.x < 0 || mSnakePos.x + SNAKE_WIDTH > SCREEN_WIDTH)
-    {
-        mSnakeVel.x *= -1; // Reverse direction when reaching screen edges
-    }
-
-    // Move the monkey
-    mMonkeyPos.x += mMonkeyVel.x * deltaTime;
-    if (mMonkeyPos.x < 0 || mMonkeyPos.x + MONKEY_WIDTH > SCREEN_WIDTH)
-    {
-        mMonkeyVel.x *= -1; // Reverse direction when reaching screen edges
-    }
-
-    // Move the crocodile
-    mCrocPos.x += mCrocVel.x * deltaTime;
-    if (mCrocPos.x < 0 || mCrocPos.x + CROC_WIDTH > SCREEN_WIDTH)
-    {
-        mCrocVel.x *= -1; // Reverse direction when reaching screen edges
-    }
-
-    // Check for collisions between the rabbit and other actors
-    if (CheckCollisions())
-    {
-        // Collision detected, set game over
-        mIsRunning = false;
-    }
-
-    // Check for game over conditions (e.g., rabbit reaches the end goal)
-    if (RabbitReachesGoal())
-    {
-        // Game over, rabbit reached the goal
-        mIsRunning = false;
-    }
-
-    // Check for collision between rabbit and carrot
-    if (!mCarrot.isCollected() && CheckCollision(mRabbitPos, mCarrot.getPosition(), mRabbitSize, mCarrot.getSize()))
-    {
-        // Handle collision (e.g., increase score, remove carrot, etc.)
-        // For example:
-        mCarrot.setCollected(true); // Mark the carrot as collected
-        // Increase score, play sound, etc.
-    }
-}
-
-void JungleCrossing::GenerateOutput()
-{
-    SDL_SetRenderDrawColor(
-        mRenderer,
-        25,  // Red
-        100, // Green
-        30,  // Blue
-        255  // Alpha (0=transparent 255=not)
-    );
-
-    // Clear Back buffer
-    SDL_RenderClear(mRenderer);
-
-    // Render the background textures
-    SDL_RenderCopy(mRenderer, mJungleTexture, nullptr, &mJungleRect); // Render jungle background
-    SDL_RenderCopy(mRenderer, mMeadowTexture, nullptr, &mMeadowRect); // Render meadow background
-
-    // Render actors
-    // Rabbit
-    SDL_Rect rabbitRect = {static_cast<int>(mRabbitPos.x), static_cast<int>(mRabbitPos.y), RABBIT_WIDTH, RABBIT_HEIGHT};
-    SDL_RenderCopy(mRenderer, mRabbitTexture, nullptr, &rabbitRect);
-
-    // Monkey
-    SDL_Rect monkeyRect = {static_cast<int>(mMonkeyPos.x), static_cast<int>(mMonkeyPos.y), MONKEY_WIDTH, MONEY_HEIGHT};
-    SDL_RenderCopy(mRenderer, mMonkeyTexture, nullptr, &monkeyRect);
-
-    // Panther
-    SDL_Rect pantherRect = {static_cast<int>(mPantherPos.x), static_cast<int>(mPantherPos.y), PANTHER_WIDTH, PANTHER_HEIGHT};
-    SDL_RenderCopy(mRenderer, mPantherTexture, nullptr, &pantherRect);
-
-    // Snake
-    SDL_Rect snakeRect = {static_cast<int>(mSnakePos.x), static_cast<int>(mSnakePos.y), SNAKE_WIDTH, SNAKE_HEIGHT};
-    SDL_RenderCopy(mRenderer, mSnakeTexture, nullptr, &snakeRect);
-
-    // Crocodile
-    SDL_Rect crocRect = {static_cast<int>(mCrocPos.x), static_cast<int>(mCrocPos.y), CROC_WIDTH, CROC_HEIGHT};
-    SDL_RenderCopy(mRenderer, mCrocTexture, nullptr, &crocRect);
-
-    // Render the carrot object
-    mCarrot.Render(mRenderer);
-
-    // Render text if the game is over
-    if (!mIsRunning)
-    {
-        RenderText("Game Over", 400, 300); // Adjust position as needed
-    }
-
-    // Render text if the rabbit reaches the goal
-    if (RabbitReachesGoal())
-    {
-        RenderText("YAY", 400, 300); // Adjust position as needed
-    }
-
-    // Swap main view to be now the back buffer
-    SDL_RenderPresent(mRenderer);
-
-    return;
-}
-
-// Method to shut down the game and clear memory
-void JungleCrossing::Shutdown()
-{
-    // Cleanup textures
-    if (mRabbitTexture)
-        SDL_DestroyTexture(mRabbitTexture);
-    if (mPantherTexture)
-        SDL_DestroyTexture(mPantherTexture);
-    if (mSnakeTexture)
-        SDL_DestroyTexture(mSnakeTexture);
-    if (mMonkeyTexture)
-        SDL_DestroyTexture(mMonkeyTexture);
-    if (mCrocTexture)
-        SDL_DestroyTexture(mCrocTexture);
-    if (mJungleTexture)
-        SDL_DestroyTexture(mJungleTexture);
-    if (mMeadowTexture)
-        SDL_DestroyTexture(mMeadowTexture);
-
-    SDL_DestroyWindow(mWindow);
+void JungleCrossing::Shutdown() {
+    TTF_CloseFont(mFont);
     SDL_DestroyRenderer(mRenderer);
+    SDL_DestroyWindow(mWindow);
+    TTF_Quit();
     SDL_Quit();
 }
 
-void JungleCrossing::RenderText()
-{
-}
-
-// Check for collisions between the rabbit and other actors
-bool JungleCrossing::CheckCollisions()
-{
-    // Check collision with panther
-    if (CheckCollision(mRabbitPos, mRabbitSize, mPantherPos, mPantherSize) ||
-        // Check collision with snake
-        CheckCollision(mRabbitPos, mRabbitSize, mSnakePos, mSnakeSize) ||
-        // Check collision with monkey
-        CheckCollision(mRabbitPos, mRabbitSize, mMonkeyPos, mMonkeySize) ||
-        // Check collision with crocodile
-        CheckCollision(mRabbitPos, mRabbitSize, mCrocPos, mCrocSize))
-    {
-        // Collision detected with any actor, return true
-        return true;
+void JungleCrossing::ProcessInput() {
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+        if (event.type == SDL_QUIT) {
+            Shutdown();
+        break;
+        }
     }
 
-    return false; // No collision detected
-}
-
-// Function to check collision between two rectangles
-bool JungleCrossing::CheckCollision()
-{
-    // Calculate bounding box for first rectangle
-    float left1 = pos1.x;
-    float right1 = pos1.x + size1.x;
-    float top1 = pos1.y;
-    float bottom1 = pos1.y + size1.y;
-
-    // Calculate bounding box for second rectangle
-    float left2 = pos2.x;
-    float right2 = pos2.x + size2.x;
-    float top2 = pos2.y;
-    float bottom2 = pos2.y + size2.y;
-
-    // Check for intersection of bounding boxes
-    if (right1 >= left2 && left1 <= right2 && bottom1 >= top2 && top1 <= bottom2)
-    {
-        return true; // Collision detected
+    const Uint8* state = SDL_GetKeyboardState(nullptr);
+    if (state[SDL_SCANCODE_UP]) {
+        mRabbit.vel.y = -1;
+    } else if (state[SDL_SCANCODE_DOWN]) {
+        mRabbit.vel.y = 1;
+    } else {
+        mRabbit.vel.y = 0;
     }
 
-    return false; // No collision detected
+    if (state[SDL_SCANCODE_LEFT]) {
+        mRabbit.vel.x = -1;
+    } else if (state[SDL_SCANCODE_RIGHT]) {
+        mRabbit.vel.x = 1;
+    } else {
+        mRabbit.vel.x = 0;
+    }
 }
 
-// Function to load an image file and create an SDL texture from it
-// Parameters:
-// - filePath: The file path of the image to load
-// Returns:
-// - Pointer to the loaded SDL texture, or nullptr if loading fails
-SDL_Texture *JungleCrossing::LoadTexture(const std::string &filePath)
-{
-    // Load the image surface from the specified file path
-    SDL_Surface *IMG_Load(filePath.c_str());
+void JungleCrossing::UpdateGame() {
+     // Calculate delta time
+    Uint32 ticks = SDL_GetTicks();
+    float deltaTime = (ticks - mTicksCount) / 1000.0f;
+    mTicksCount = ticks;
 
-    // Check if the surface was loaded successfully
-    if (!IMG_Load)
-    {
-        // Log an error message if loading failed and return nullptr
-        SDL_Log("Failed to load image %s: %s", filePath.c_str(), IMG_GetError());
+    // Update rabbit position
+    mRabbit.pos.x += mRabbit.vel.x * 200.0f * deltaTime;
+    mRabbit.pos.y += mRabbit.vel.y * 200.0f * deltaTime;
+
+    // Update rabbit collider
+    mRabbit.collider.x = static_cast<int>(mRabbit.pos.x);
+    mRabbit.collider.y = static_cast<int>(mRabbit.pos.y);
+
+    // Check for collisions between the rabbit and carrots
+    for (auto it = mCarrotPositions.begin(); it != mCarrotPositions.end(); ++it) {
+        if (CheckCollision(mRabbit.pos, *it, RABBIT_WIDTH, RABBIT_HEIGHT, CARROT_WIDTH, CARROT_HEIGHT)) {
+            // Remove the collected carrot from the vector
+            it = mCarrotPositions.erase(it);
+            // Increment the player's score
+            ++mScore;
+        }
+    }
+}
+
+void JungleCrossing::GenerateOutput() {
+    SDL_SetRenderDrawColor(mRenderer, 0, 0, 0, 255);
+    SDL_RenderClear(mRenderer);
+
+ // Render rabbit
+    SDL_RenderCopy(mRenderer, mRabbit.texture, nullptr, &mRabbit.collider);
+
+    // Render score text
+    SDL_Color textColor = {255, 255, 255}; // White color
+    SDL_Surface* textSurface = TTF_RenderText_Solid(mFont, ("Score: " + std::to_string(mScore)).c_str(), textColor);
+    SDL_Texture* textTexture = SDL_CreateTextureFromSurface(mRenderer, textSurface);
+    SDL_Rect textRect = {SCREEN_WIDTH - 200, 20, textSurface->w, textSurface->h}; // Adjust position as needed
+    SDL_RenderCopy(mRenderer, textTexture, nullptr, &textRect);
+    SDL_FreeSurface(textSurface);
+    SDL_DestroyTexture(textTexture);
+
+    // Present the renderer
+    SDL_RenderPresent(mRenderer);
+}
+
+SDL_Texture* JungleCrossing::LoadTexture(const std::string& fileName) {
+    SDL_Surface* surface = IMG_Load(fileName.c_str());
+    if (!surface) {
+        std::cerr << "IMG_Load failed: " << IMG_GetError() << std::endl;
         return nullptr;
     }
 
-    // Create an SDL texture from the loaded surface
-    SDL_Texture *texture = SDL_CreateTextureFromSurface(mRenderer, surface);
-
-    // Free the surface as it's no longer needed after creating the texture
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(mRenderer, surface);
     SDL_FreeSurface(surface);
-
-    // Check if the texture creation was successful
-    if (!texture)
-    {
-        // Log an error message if texture creation failed and return nullptr
-        SDL_Log("Failed to create texture from image %s: %s", filePath.c_str(), SDL_GetError());
-        return nullptr;
+    if (!texture) {
+        std::cerr << "SDL_CreateTextureFromSurface failed: " << SDL_GetError() << std::endl;
     }
 
-    // Return the pointer to the created texture
     return texture;
 }
 
-void JungleCrossing::RenderText(const std::string &text, int x, int y)
-{
-    // Load font
-    TTF_Font *font = TTF_OpenFont("comic.ttf", 24); // Adjust font and size as needed
-
-    if (!font)
-    {
-        SDL_Log("Failed to load font: %s", TTF_GetError());
-        return;
+bool JungleCrossing::CheckCollision(const Vector2& posA, const Vector2& posB, int widthA, int heightA, int widthB, int heightB) {
+    if (posA.x < posB.x + widthB &&
+        posA.x + widthA > posB.x &&
+        posA.y < posB.y + heightB &&
+        posA.y + heightA > posB.y) {
+        return true;
     }
-
-    // Render text surface
-    SDL_Color color = {255, 255, 255}; // White color
-    SDL_Surface *textSurface = TTF_RenderText_Blended(font, text.c_str(), color);
-
-    if (!textSurface)
-    {
-        SDL_Log("Failed to render text surface: %s", TTF_GetError());
-        TTF_CloseFont(font);
-        return;
-    }
-
-    // Create texture from surface
-    SDL_Texture *textTexture = SDL_CreateTextureFromSurface(mRenderer, textSurface);
-
-    if (!textTexture)
-    {
-        SDL_Log("Failed to create text texture: %s", SDL_GetError());
-        SDL_FreeSurface(textSurface);
-        TTF_CloseFont(font);
-        return;
-    }
-
-    // Get text dimensions
-    int textWidth = textSurface->w;
-    int textHeight = textSurface->h;
-
-    // Render text texture
-    SDL_Rect dstRect = {x, y, textWidth, textHeight};
-    SDL_RenderCopy(mRenderer, textTexture, nullptr, &dstRect);
-
-    // Clean up
-    SDL_DestroyTexture(textTexture);
-    SDL_FreeSurface(textSurface);
-    TTF_CloseFont(font);
+    return false;
 }
