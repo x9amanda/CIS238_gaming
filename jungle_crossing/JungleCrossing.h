@@ -37,7 +37,7 @@ private:
     void UpdateGame();
     void GenerateOutput();
     SDL_Texture *LoadTexture(const std::string &fileName);
-    bool CheckCollision(const Ac &posA, const Vector2 &posB, int widthA, int heightA, int widthB, int heightB);
+    bool CheckCollision(const Vector2 &posA, const Vector2 &posB, int widthA, int heightA, int widthB, int heightB);
 
     SDL_Window *mWindow;
     SDL_Renderer *mRenderer;

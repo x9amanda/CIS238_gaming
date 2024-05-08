@@ -190,13 +190,13 @@ void JungleCrossing::UpdateGame()
     mRabbit.collider.y = static_cast<int>(mRabbit.pos.y);
 
     // Ensure the rabbit stays within the screen boundaries
-    if (mRabbit.y < 0)
+    if (mRabbit.pos.y < 0)
     {
-        mRabbit.y = 0;
+        mRabbit.pos.y = 0;
     }
-    else if (mRabbit.y > 768 - RABBIT_HEIGHT)
+    else if (mRabbit.pos.y > 768 - RABBIT_HEIGHT)
     {
-        mRabbit.y = 768 - RABBIT_HEIGHT;
+        mRabbit.pos.y = 768 - RABBIT_HEIGHT;
     }
 
     // Update positions of other actors
@@ -206,7 +206,7 @@ void JungleCrossing::UpdateGame()
     // Check for collisions between the rabbit and carrots
     for (auto it = mCarrotPositions.begin(); it != mCarrotPositions.end(); ++it)
     {
-        if (CheckCollision(mRabbit.pos, *it, RABBIT_WIDTH, RABBIT_HEIGHT, CARROT_WIDTH, CARROT_HEIGHT))
+        if (CheckCollision({mRabbit.pos.x, mRabbit.pos.y}, *it, RABBIT_WIDTH, RABBIT_HEIGHT, CARROT_WIDTH, CARROT_HEIGHT))
         {
             // Remove the collected carrot from the vector
             it = mCarrotPositions.erase(it);
